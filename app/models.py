@@ -52,12 +52,16 @@ A model that represents recommendations:
 
 class Recommendation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    body = db.Column(db.String(140))
+    book_title = db.Column(db.String(40))
+    book_author = db.Column(db.String(25))
+    book_summary = db.Column(db.String(200))
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    recommender = db.Column(db.String(25))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     def __repr__(self):
-        return '<Recommendation {}>'.format(self.body)
+        return '<Recommendation {}>'.format(self.book_title)
+
 
 
 #user loader is registered with Flask-Login

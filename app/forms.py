@@ -32,3 +32,10 @@ class EditProfileForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     about_me = TextAreaField('About me', validators=[Length(min=0, max=140)])
     submit = SubmitField('Submit')
+
+#Added recommendation form - done
+class RecommendationForm(FlaskForm):
+    book_title = StringField('Title', validators=[DataRequired()])
+    book_author = StringField('Author', validators=[DataRequired()])
+    book_summary = TextAreaField('Summary', validators=[Length(min=0, max=300)])
+    submit = SubmitField('Recommend!')

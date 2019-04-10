@@ -1,6 +1,6 @@
 <table>
     <tr valign="top">
-        <td><img src="{{ recommendation.author.avatar(36) }}"></td>
-        <td>{{ recommendation.author.username }} recommends:<br>{{ recommendation.body }}</td>
+        <td><img src="{{ recommendation.recommender.avatar(36) }}"></td>
+        <td>{{ recommendation.recommender.username }} recommends:<br>{{ recommendation.content }}</td>
     </tr>
 </table>

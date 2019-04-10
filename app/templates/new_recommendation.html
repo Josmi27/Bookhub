@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{%block content %}
+    <h2>What Book Would You Like to Recommend?</h2>
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.book_title.label }}<br>
+            {{ form.book_title(size=50) }}<br>
+            {% for error in form.book_title.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.book_author.label }}<br>
+            {{ form.book_author(size=30) }}<br>
+            {% for error in form.book_author.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.book_summary.label }}<br>
+            {{ form.book_summary(cols=50, rows=4) }}<br>
+            {% for error in form.book_summary.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+
+        <p>{{ form.submit() }}</p>
+    </form>
+{% endblock %}

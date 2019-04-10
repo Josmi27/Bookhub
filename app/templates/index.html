@@ -2,7 +2,39 @@
 
 {% block content %}
     <h1>Hi, {{ current_user.username }}!</h1>
+
+
+        <p><a href="{{ url_for('new_recommendation') }}">Add New Recommendation</a>
+            <a href="{{ url_for('edit_profile') }}">Entreprenurial</a>
+            <a href="{{ url_for('edit_profile') }}">Self-help</a></p>
+            <br>
+                <!-- Version 1 (The code below makes the home page look like this):
+                        Add New Recommendation Entreprenurial Self-help
+
+                _______________________Code Snippet Below____________________________    
+                    <p><a href="{{ url_for('new_recommendation') }}">Add New Recommendation</a>
+                    <a href="{{ url_for('edit_profile') }}">Entreprenurial</a>
+                    <a href="{{ url_for('edit_profile') }}">Self-help</a></p>
+                    <br>
+                -->
+
+
+                <!-- Version 2 (The code below makes the home page look like this):
+                    Categories: Entreprenurial Self-help
+
+                    Add New Recommendation
+                    
+                ________________________Code Snippet Below____________________________
+                Categories:
+                    <a href="{{ url_for('edit_profile') }}">Entreprenurial</a>
+                    <a href="{{ url_for('edit_profile') }}">Self-help</a>
+                    <p><a href="{{ url_for('new_recommendation') }}">Add New Recommendation</a></p>
+                    <br>
+                -->
+
+
+    
     {% for recommendation in recommendations %}
-    <div><p>{{ recommendation.author.username }} recommends: <em>{{ recommendation.body }}</em></p></div>
+    <div><p>{{ current_user.username }} recommends: <em>{{ recommendation.content }}</em></p></div>
     {% endfor %}
 {% endblock %}
