@@ -1,6 +1,8 @@
 <table>
     <tr valign="top">
-        <td><img src="{{ recommendation.recommender.avatar(36) }}"></td>
-        <td>{{ recommendation.recommender.username }} recommends:<br>{{ recommendation.content }}</td>
-    </tr>
+        <td>
+            <a href="{{ url_for('user', username=recommendation.user_id.username) }}">
+            {{ recommendation.user_id.username }}</a> recommends:<br>{{ recommendation.book_title }}</td>
+    </td>
+        </tr>
 </table>

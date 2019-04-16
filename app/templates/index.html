@@ -2,12 +2,15 @@
 
 {% block content %}
     <h1>Hi, {{ current_user.username }}!</h1>
-
-
         <p><a href="{{ url_for('new_recommendation') }}">Add New Recommendation</a>
             <a href="{{ url_for('edit_profile') }}">Entreprenurial</a>
             <a href="{{ url_for('edit_profile') }}">Self-help</a></p>
             <br>
+
+<!-- To Do: Make New Recommendation Button work.-->
+<!-- To Do: Update Database to include categories, so that I can filter the recommendation results-->
+
+
                 <!-- Version 1 (The code below makes the home page look like this):
                         Add New Recommendation Entreprenurial Self-help
 
@@ -32,9 +35,27 @@
                     <br>
                 -->
 
-
+    <!-- {% if form %}
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.recommendation.label }}<br>
+            {{ form.recommendation(cols=32, rows=4) }}<br>
+            {% for error in form.recommendation.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>{{ form.submit() }}</p>
+    </form>
+    {% endif %} -->
     
     {% for recommendation in recommendations %}
-    <div><p>{{ current_user.username }} recommends: <em>{{ recommendation.content }}</em></p></div>
-    {% endfor %}
+        {% include '_recommendation.html' %}
+    {% endfor %}<br>
+    {% if prev_url %}
+    <a href="{{ prev_url }}">Newer recommendations</a>
+    {% endif %}
+    {% if next_url %}
+    <a href="{{ next_url }}">Older recommendations</a>
+    {% endif %}
 {% endblock %}

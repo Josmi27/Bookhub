@@ -37,5 +37,6 @@ class EditProfileForm(FlaskForm):
 class RecommendationForm(FlaskForm):
     book_title = StringField('Title', validators=[DataRequired()])
     book_author = StringField('Author', validators=[DataRequired()])
+    book_category = StringField('Category', validators=[DataRequired()])
     book_summary = TextAreaField('Summary', validators=[Length(min=0, max=300)])
     submit = SubmitField('Recommend!')

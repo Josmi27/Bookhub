@@ -6,29 +6,44 @@ from app.models import User, Recommendation
 from werkzeug.urls import url_parse
 from datetime import datetime
 
-@app.route('/')
-@app.route('/index')
+@app.route('/', methods=['GET', 'POST'])
+@app.route('/index', methods=['GET', 'POST'])
 @login_required
 def index():
+       # recommendation = Recommendation(book_title)
+        recommender=current_user
+        page = request.args.get('page', 1, type=int)
+        recommendations = current_user.followed_posts().paginate(
+                page, app.config['POSTS_PER_PAGE'], False)
+        next_url = url_for('index', page=recommendations.next_num) \
+                if recommendations.has_next else None
+        prev_url = url_for('index', page = recommendations.prev_num) \
+                if recommendations.has_prev else None
+        return render_template('index.html', title='Home', recommender=recommender, recommendations=recommendations.items, next_url=next_url, prev_url=prev_url)
 
-#         >>> # print post author and body for all posts 
-# >>> posts = Post.query.all()
-# >>> for p in posts:
-# ...     print(p.id, p.author.username, p.body)
-# ...
-# 1 john my first post!
-        recommendations = Recommendation.query.all()
-     # [
-#         {
-#                 'recommender': {'username':'John'},
-#                 'content': 'Diary of a Wimpy Kid.'
-#         },
-#         {
-#                 'recommender': {'username': 'Susan'},
-#                 'content': 'A Different World'
-#         }
-#     ]
-        return render_template('index.html', title='Home', recommendations=recommendations)
+        # recommendations = Recommendation.query.all()
+        # return render_template('index.html', title='Home', recommendations=recommendations)
+
+
+# Function for routing recommendation button
+@app.route('/new_recommendation', methods=['GET', 'POST'])
+@login_required
+def new_recommendation():
+        form = RecommendationForm()
+        if form.validate_on_submit():
+                recommendation = Recommendation(book_title=form.book_title.data, book_author=form.book_author.data, book_category=form.book_category.data, book_summary=form.book_summary.data, author=current_user)
+                db.session.add(recommendation)
+                db.session.commit()
+                flash('Awesome, your recommendation is now posted!')
+
+                # # I wanted to redirect the user to their profile page, so that they could see their new recommendation
+                  # on top of their other recommendations, but I need to keep things simple for now.
+                # return redirect(url_for('user', username=current_user.username))
+                
+                return redirect(url_for('index'))
+        # if the form has not been filled out yet, then it will be come to this return function to be rendered
+        return render_template('new_recommendation.html', title='New Recommendation', form=form)
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -67,27 +82,21 @@ def register():
                 return redirect(url_for('login'))
         return render_template('register.html', title='Register', form=form)
 
+
 # Profile link
 @app.route('/user/<username>')
 @login_required
 def user(username):    
         user = User.query.filter_by(username=username).first_or_404()
-        user_recommendations = user.recommendations.all()
-        recommendations = [
-                # Later, I need to add if case for if a summary was not given
-            {'recommender': user, 'content': user_recommendations},
-            {'recommender': user, 'content': 'Test Recommendation'}]
-                                                # {
-                                                # {'book_title': }, 
-                                                # {'book_author':}, 
-                                                # {'book_summary':}}
-        
-        return render_template('user.html', user=user, recommendations=recommendations)
-        # recommendations = [
-        #     {'author': user, 'body': 'Test recommendation #1'},
-        #     {'author': user, 'body': 'Test recommendation #2'}
-        # ]
-        # return render_template('user.html', user=user, recommendations=recommendations)
+        page = request.args.get('page', 1, type=int)
+        recommendations = user.recommendations.order_by(Recommendation.timestamp.desc()).paginate(
+                page, app.config['POSTS_PER_PAGE'], False)
+        next_url = url_for('user', username=user.username, page=recommendations.next_num) \
+                if recommendations.has_next else None
+        prev_url = url_for('user', username=user.username, page=recommendations.prev_num) \
+                if recommendations.has_prev else None
+        return render_template('user.html', user=user, recommendations=recommendations.items, next_url=next_url, prev_url=prev_url)
+
 
 @app.before_request
 def before_request():
@@ -110,24 +119,49 @@ def edit_profile():
                 form.about_me.data = current_user.about_me
         return render_template('edit_profile.html', title='Edit Profile', form=form)
 
-# Function for routing recommendation button
-@app.route('/new_recommendation', methods=['GET', 'POST'])
+@app.route('/follow/<username>')
 @login_required
-def new_recommendation():
-        form = RecommendationForm()
-        if form.validate_on_submit():
-                #gets all information from the Recommendation form created in forms.py
-                u = User.query.get(1)
-                recommendation = Recommendation(book_title=form.book_title.data, book_author=form.book_author.data, book_summary=form.book_summary.data, recommender=u)
-                db.session.add(recommendation)
-                db.session.commit()
-                flash('Awesome, your recommendation is now posted!')
-
-                # # I wanted to redirect the user to their profile page, so that they could see their new recommendation
-                  # on top of their other recommendations, but I need to keep things simple for now.
-                # return redirect(url_for('user', username=current_user.username))
+def follow(username):
+        user = User.query.filter_by(username=username).first()
+        if user is None:
+                flash('User {} not found.'.format(username))
                 return redirect(url_for('index'))
+        if user == current_user:
+                flash('You cannot follow yourself!')
+                return redirect(url_for('user', username=username))
+        current_user.follow(user)
+        db.session.commit()
+        flash('You are following {}'.format(username))
+        return redirect(url_for('user', username=username))
 
+@app.route('/unfollow/<username>')
+@login_required
+def unfollow(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash('User {} not found.'.format(username))
+        return redirect(url_for('index'))
+    if user == current_user:
+        flash('You cannot unfollow yourself!')
+        return redirect(url_for('user', username=username))
+    current_user.unfollow(user)
+    db.session.commit()
+    flash('You are not following {}.'.format(username))
+    return redirect(url_for('user', username=username))
 
-        # if the form has not been filled out yet, then it will be come to this return function to be rendered
-        return render_template('new_recommendation.html', title='New Recommendation', form=form)
+@app.route('/explore')
+@login_required
+def explore():
+    page = request.args.get('page', 1, type=int)
+    recommendations = Recommendation.query.order_by(Recommendation.timestamp.desc()).paginate(
+        page, app.config['POSTS_PER_PAGE'], False)
+    next_url = url_for('explore', page=recommendations.next_num) \
+        if recommendations.has_next else None
+    prev_url = url_for('explore', page=recommendations.prev_num) \
+        if recommendations.has_prev else None
+    return render_template("index.html", title='Explore', recommendations=recommendations.items,
+                          next_url=next_url, prev_url=prev_url)
+    page = request.args.get('page', 1, type=int)
+    recommendations = Recommendation.query.order_by(Recommendation.timestamp.desc()).all()
+    return render_template('index.html', title='Explore', recommendations=recommendations)
+
