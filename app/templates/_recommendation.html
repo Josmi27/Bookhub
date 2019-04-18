@@ -1,8 +1,10 @@
 <table>
     <tr valign="top">
         <td>
-            <a href="{{ url_for('user', username=recommendation.user_id.username) }}">
-            {{ recommendation.user_id.username }}</a> recommends:<br>{{ recommendation.book_title }}</td>
-    </td>
-        </tr>
+            <img src="{{ recommendation.author.avatar(36) }}"></td>
+        <td>
+              <a href="{{ url_for('user', username=recommendation.author.username) }}">
+                  {{ recommendation.author.username }}</a> recommends:<br>{{ recommendation.book_title }}</td>
+
+    </tr>
 </table>
