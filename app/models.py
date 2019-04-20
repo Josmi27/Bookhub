@@ -1,10 +1,11 @@
 # This file defines the initial schema (database structure) 
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
-from app import db
 from flask_login import UserMixin
-from app import login
 from hashlib import md5
+from time import time
+import jwt
+from app import app, db, login
 
 
 followers = db.Table('followers',
@@ -72,9 +73,10 @@ class User(UserMixin, db.Model):
         return followed.union(own).order_by(Recommendation.timestamp.desc())     
 
 
-
-
-    
+#user loader is registered with Flask-Login
+@login.user_loader
+def load_user(id):
+    return User.query.get(int(id))
          
 '''
 A model that represents recommendations:
@@ -98,10 +100,3 @@ class Recommendation(db.Model):
 
     def __repr__(self):
         return '<Recommendation {}>'.format(self.book_title)
-
-
-
-#user loader is registered with Flask-Login
-@login.user_loader
-def load_user(id):
-    return User.query.get(int(id))

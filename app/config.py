@@ -7,4 +7,4 @@ class Config(object):
         'sqlite:///' + os.path.join(basedir, 'app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    RECOMMENDATIONS_PER_PAGE = 1
+    RECOMMENDATIONS_PER_PAGE = 2
