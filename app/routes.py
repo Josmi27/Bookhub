@@ -135,6 +135,18 @@ def unfollow(username):
     return redirect(url_for('user', username=username))
 
 
+@app.route('/downvote/<book_title>')
+@login_required
+def downvote(book_title):
+        book_title = Recommendation.query.filter_by(book_title=book_title).first()
+        if book_title is None:
+                flash('Recommendation {} not found.'.format(book_title))
+                return redirect(url_for('index'))
+        current_user.downvote(book_title)
+        flash('You have upvoted {}'.format(book_title))
+        return redirect(url_for('index'))
+
+
 @app.route('/follow/<username>')
 @login_required
 def follow(username):
@@ -149,6 +161,19 @@ def follow(username):
         db.session.commit()
         flash('You are following {}'.format(username))
         return redirect(url_for('user', username=username))
+
+
+@app.route('/upvote/<book_title>')
+@login_required
+def upvote(book_title):
+        book_title = Recommendation.query.filter_by(book_title=book_title).first()
+        if book_title is None:
+                flash('Recommendation {} not found.'.format(book_title))
+                return redirect(url_for('index'))
+        current_user.upvote(book_title)
+        flash('You have upvoted {}'.format(book_title))
+        return redirect(url_for('index'))
+
 
 
 # Function for routing recommendation button
@@ -169,11 +194,3 @@ def new_recommendation():
                 return redirect(url_for('index'))
         # if the form has not been filled out yet, then it will be come to this return function to be rendered
         return render_template('new_recommendation.html', title='New Recommendation', form=form)
-
-
-
-
-
-
-
-

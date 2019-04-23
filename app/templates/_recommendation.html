@@ -12,9 +12,18 @@
             recommended {{ moment(recommendation.timestamp).fromNow() }}:
             <br>
             {{ recommendation.book_title }} by {{ recommendation.book_author }}
+            <br>Category:    {{ recommendation.book_category }}
             <br>
             <br>
-            Category:    {{ recommendation.book_category }}
+
+            {{ recommendation.votes.count() }} upvotes, {{ recommendation.votes.count() }} downvotes.
+            {% if user == current_user %}
+            <p>Cannot upvote/downvote your recommendation</p>
+            {% else %}
+            <a href="{{ url_for('upvote', book_title=recommendation.book_title) }}">Upvote</a>
+            or
+            <a href="{{ url_for('downvote', book_title=recommendation.book_title) }}">Downvote</a>
+            {% endif %}
         </td>
     </tr>
 </table>

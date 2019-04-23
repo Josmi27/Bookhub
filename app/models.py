@@ -13,6 +13,14 @@ db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
 db.Column('followed_id', db.Integer, db.ForeignKey('user.id'))
 )
 
+
+votes = db.Table('votes',
+db.Column('upvote_id', db.Integer, db.ForeignKey('recommendation.id')),
+db.Column('downvote_id', db.Integer, db.ForeignKey('recommendation.id'))
+)
+
+
+
 '''
 A model that represents users:
 
@@ -38,7 +46,12 @@ class User(UserMixin, db.Model):
     primaryjoin = (followers.c.follower_id == id),
     secondaryjoin = (followers.c.followed_id == id),
     backref = db.backref('followers', lazy='dynamic'), lazy='dynamic')
-    
+
+    upvoted = db.relationship(
+    'Recommendation', secondary = votes,
+    primaryjoin = (votes.c.upvote_id == id),
+    secondaryjoin = (votes.c.downvote_id == id),
+    backref = db.backref('votes', lazy='dynamic'), lazy='dynamic')
     def __repr__(self):
         return '<User {}>'.format(self.username)
 
@@ -57,14 +70,29 @@ class User(UserMixin, db.Model):
         if not self.is_following(user):
             self.followed.append(user)
         
+
+    def upvote(self, book_title):
+        if not self.is_voting(book_title):
+            self.upvoted.append(book_title)
+    
+
+
     def unfollow(self, user):
         if self.is_following(user):
             self.followed.remove(user)
+        
+    def downvote(self, book_title):
+        if not self.is_voting(book_title):
+            self.upvoted.remove(book_title)
 
     def is_following(self, user):
         return self.followed.filter(
             followers.c.followed_id == user.id).count() > 0
-    
+
+    def is_voting(self, book_title):
+        return self.upvoted.filter(
+            votes.c.upvote_id == Recommendation.book_title).count() > 0
+
     def followed_posts(self):
         followed = Recommendation.query.join(
             followers, (followers.c.followed_id == Recommendation.user_id)).filter(
@@ -97,6 +125,8 @@ class Recommendation(db.Model):
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     #recommender = db.Column(db.String(25))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+
 
     def __repr__(self):
         return '<Recommendation {}>'.format(self.book_title)
